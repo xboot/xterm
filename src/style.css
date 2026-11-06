@@ -97,10 +97,12 @@ button { color: inherit; }
 .field-group { display: grid; gap: 9px; margin-bottom: 17px; min-width: 0; }
 .field-group label { color: #aeb7ba; font-size: 13px; font-weight: 600; }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-select {
+select,
+input[type='number'] {
   height: 44px; border: 1px solid #31383b; border-radius: 3px; background: #0c0f11; color: #e4e9e6;
 }
-.field-group select { width: 100%; padding: 0 12px; font: 500 13.5px 'JetBrains Mono', monospace; }
+.field-group select,
+.field-group input[type='number'] { width: 100%; min-width: 0; padding: 0 12px; font: 500 13.5px 'JetBrains Mono', monospace; }
 select:focus, input:focus { outline: 1px solid #94b84b; outline-offset: 0; }
 select:disabled { opacity: .45; }
 
@@ -179,7 +181,8 @@ select:disabled { opacity: .45; }
 :root[data-theme='light'] .brand-mark { border-color: #91a75e; background: #f1f6e6; }
 :root[data-theme='light'] .icon-button { background: #ffffff; color: #626c6e; }
 :root[data-theme='light'] .field-group label { color: #5f696b; }
-:root[data-theme='light'] select { background: #f8f9f6; color: #293031; }
+:root[data-theme='light'] select,
+:root[data-theme='light'] input[type='number'] { background: #f8f9f6; color: #293031; }
 :root[data-theme='light'] .connect-button { color: #ffffff; }
 :root[data-theme='light'] .connect-button:hover { background: #769620; }
 :root[data-theme='light'] .connect-button.connected { border-color: #d7a8a8; background: #fff0f0; color: #aa3737; }

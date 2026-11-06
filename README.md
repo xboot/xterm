@@ -8,8 +8,9 @@ Live: [xterm.xboot.org](https://xterm.xboot.org)
 
 ## Features
 
-- Configurable baud rate, data bits, stop bits, parity, and flow control
+- Custom baud rates, serial framing, flow control, and CR/LF/CRLF modes
 - ANSI terminal emulation with direct keyboard input
+- Ordered writes for reliable typing and large pastes
 - Optional timestamps, transfer statistics, and log downloads
 - Chinese and English interfaces with dark and light themes
 - Local-only serial communication; data is never uploaded

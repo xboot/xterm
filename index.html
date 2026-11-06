@@ -47,11 +47,15 @@
 
           <div class="field-group">
             <label for="baud-rate" data-i18n="baudRate">波特率</label>
-            <select id="baud-rate">
-              <option>1200</option><option>2400</option><option>4800</option><option>9600</option>
-              <option>19200</option><option>38400</option><option>57600</option><option selected>115200</option>
-              <option>230400</option><option>460800</option><option>921600</option><option>1500000</option>
-            </select>
+            <input id="baud-rate" type="number" min="1" max="20000000" step="1" value="115200" list="baud-rates" inputmode="numeric" />
+            <datalist id="baud-rates">
+              <option value="1200"></option><option value="2400"></option><option value="4800"></option>
+              <option value="9600"></option><option value="19200"></option><option value="38400"></option>
+              <option value="57600"></option><option value="74880"></option><option value="115200"></option>
+              <option value="230400"></option><option value="460800"></option><option value="921600"></option>
+              <option value="1000000"></option><option value="1500000"></option><option value="2000000"></option>
+              <option value="3000000"></option>
+            </datalist>
           </div>
 
           <div class="field-row">
@@ -60,7 +64,10 @@
           </div>
 
           <div class="field-group"><label for="parity" data-i18n="parity">校验位</label><select id="parity"><option value="none" data-i18n="none">无</option><option value="even" data-i18n="evenParity">偶校验</option><option value="odd" data-i18n="oddParity">奇校验</option></select></div>
-          <div class="field-group"><label for="flow-control" data-i18n="flowControl">流控制</label><select id="flow-control"><option value="none" data-i18n="none">无</option><option value="hardware" data-i18n="hardwareFlow">硬件流控</option></select></div>
+          <div class="field-row">
+            <div class="field-group"><label for="flow-control" data-i18n="flowControl">流控制</label><select id="flow-control"><option value="none" data-i18n="none">无</option><option value="hardware" data-i18n="hardwareFlow">硬件流控</option></select></div>
+            <div class="field-group"><label for="line-ending" data-i18n="lineEnding">回车发送</label><select id="line-ending"><option value="cr">CR</option><option value="lf">LF</option><option value="crlf">CRLF</option></select></div>
+          </div>
 
           <button class="connect-button" id="connect-button" type="button"><span class="button-symbol">↗</span><span data-i18n="connect">连接串口</span></button>
 

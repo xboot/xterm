@@ -10,6 +10,7 @@ const elements = {
   stopBits: $('#stop-bits'),
   parity: $('#parity'),
   flowControl: $('#flow-control'),
+  lineEnding: $('#line-ending'),
   connect: $('#connect-button'),
   emptyConnect: $('#empty-connect'),
   emptyState: $('#empty-state'),
@@ -37,7 +38,7 @@ const elements = {
 const translations = {
   zh: {
     settingsTitle: '连接配置', baudRate: '波特率', dataBits: '数据位', stopBits: '停止位',
-    parity: '校验位', flowControl: '流控制', none: '无', evenParity: '偶校验', oddParity: '奇校验',
+    parity: '校验位', flowControl: '流控制', lineEnding: '回车发送', none: '无', evenParity: '偶校验', oddParity: '奇校验',
     hardwareFlow: '硬件流控', connect: '连接串口', disconnect: '断开连接', connected: '已连接', disconnected: '未连接',
     autoScroll: '自动滚动', autoScrollHint: '始终跟随最新输出', timestamps: '时间戳',
     timestampsHint: '在每个接收行的行首显示', privacyTitle: '数据仅在本机流转',
@@ -48,11 +49,11 @@ const translations = {
     logTitle: '下载日志', switchLanguage: 'Switch to English', lightTheme: '切换为浅色主题', darkTheme: '切换为深色主题',
     unsupported: '当前浏览器不支持 Web Serial，请使用桌面版 Chrome 或 Edge。', connectedToast: '串口连接成功',
     disconnectedToast: '串口已断开', noLog: '当前还没有可下载的串口数据', readFailed: '读取串口失败',
-    connectFailed: '连接失败', sendFailed: '发送失败',
+    connectFailed: '连接失败', sendFailed: '发送失败', invalidBaudRate: '请输入有效的波特率',
   },
   en: {
     settingsTitle: 'Connection', baudRate: 'Baud rate', dataBits: 'Data bits', stopBits: 'Stop bits',
-    parity: 'Parity', flowControl: 'Flow control', none: 'None', evenParity: 'Even', oddParity: 'Odd',
+    parity: 'Parity', flowControl: 'Flow control', lineEnding: 'Enter sends', none: 'None', evenParity: 'Even', oddParity: 'Odd',
     hardwareFlow: 'Hardware', connect: 'Connect serial', disconnect: 'Disconnect', connected: 'Connected', disconnected: 'Disconnected',
     autoScroll: 'Auto scroll', autoScrollHint: 'Follow the latest output', timestamps: 'Timestamps',
     timestampsHint: 'Show once at the start of each line', privacyTitle: 'Data stays on this device',
@@ -63,7 +64,7 @@ const translations = {
     logTitle: 'Download log', switchLanguage: '切换到中文', lightTheme: 'Switch to light theme', darkTheme: 'Switch to dark theme',
     unsupported: 'Web Serial is not supported. Please use desktop Chrome or Edge.', connectedToast: 'Serial port connected',
     disconnectedToast: 'Serial port disconnected', noLog: 'There is no serial data to download yet', readFailed: 'Serial read failed',
-    connectFailed: 'Connection failed', sendFailed: 'Send failed',
+    connectFailed: 'Connection failed', sendFailed: 'Send failed', invalidBaudRate: 'Enter a valid baud rate',
   },
 };
 
@@ -111,7 +112,9 @@ terminal.open($('#terminal'));
 
 let port = null;
 let reader = null;
+let writer = null;
 let readLoopPromise = null;
+let writeQueue = Promise.resolve();
 let closing = false;
 let rxBytes = 0;
 let txBytes = 0;
@@ -209,6 +212,7 @@ function savePreferences() {
     stopBits: elements.stopBits.value,
     parity: elements.parity.value,
     flowControl: elements.flowControl.value,
+    lineEnding: elements.lineEnding.value,
     autoScroll: elements.autoScroll.checked,
     timestamps: elements.timestamps.checked,
   };
@@ -230,17 +234,24 @@ function restorePreferences() {
   }
 }
 
-async function writeSerial(data) {
-  if (!port?.writable) return;
+function writeSerial(data) {
+  if (!writer || closing) return Promise.resolve();
   const bytes = typeof data === 'string' ? encoder.encode(data) : data;
-  const writer = port.writable.getWriter();
-  try {
-    await writer.write(bytes);
+  const activeWriter = writer;
+  const task = writeQueue.then(async () => {
+    if (writer !== activeWriter) return;
+    await activeWriter.write(bytes);
     txBytes += bytes.byteLength;
     updateStats();
-  } finally {
-    writer.releaseLock();
-  }
+  });
+  writeQueue = task.catch((error) => console.error(error));
+  return task;
+}
+
+function applyLineEnding(data) {
+  const endings = { cr: '\r', lf: '\n', crlf: '\r\n' };
+  const ending = endings[elements.lineEnding.value] ?? '\r';
+  return data.replace(/\r\n|\r|\n/g, ending);
 }
 
 function addLineTimestamps(text) {
@@ -301,15 +312,23 @@ async function connect() {
     return;
   }
   try {
+    const baudRate = Number(elements.baudRate.value);
+    if (!Number.isInteger(baudRate) || !elements.baudRate.checkValidity()) {
+      showToast(t('invalidBaudRate'), 'error');
+      elements.baudRate.focus();
+      return;
+    }
     port = await navigator.serial.requestPort();
     await port.open({
-      baudRate: Number(elements.baudRate.value),
+      baudRate,
       dataBits: Number(elements.dataBits.value),
       stopBits: Number(elements.stopBits.value),
       parity: elements.parity.value,
       flowControl: elements.flowControl.value,
       bufferSize: 65536,
     });
+    writer = port.writable.getWriter();
+    writeQueue = Promise.resolve();
     closing = false;
     rxBytes = 0;
     txBytes = 0;
@@ -329,24 +348,43 @@ async function connect() {
     showToast(t('connectedToast'), 'success');
     readLoopPromise = readSerial();
   } catch (error) {
+    if (writer) {
+      writer.releaseLock();
+      writer = null;
+    }
+    try {
+      await port?.close();
+    } catch {
+      // The port may not have opened.
+    }
     port = null;
     if (error.name !== 'NotFoundError') showToast(`${t('connectFailed')}: ${error.message}`, 'error');
   }
 }
 
 async function disconnect() {
-  if (!port) return;
+  if (!port || closing) return;
   closing = true;
   try {
     await reader?.cancel();
     await readLoopPromise;
+    await writeQueue;
+    if (writer) {
+      writer.releaseLock();
+      writer = null;
+    }
     await port.close();
   } catch (error) {
     console.warn(error);
   } finally {
     port = null;
     reader = null;
+    if (writer) {
+      writer.releaseLock();
+      writer = null;
+    }
     readLoopPromise = null;
+    writeQueue = Promise.resolve();
     clearInterval(sessionTimer);
     setConnected(false);
     elements.portLabel.textContent = t('waitingDevice');
@@ -380,7 +418,7 @@ function downloadLog() {
 }
 
 terminal.onData((data) => {
-  writeSerial(data).catch((error) => showToast(`${t('sendFailed')}: ${error.message}`, 'error'));
+  writeSerial(applyLineEnding(data)).catch((error) => showToast(`${t('sendFailed')}: ${error.message}`, 'error'));
 });
 
 elements.connect.addEventListener('click', connect);
@@ -402,7 +440,7 @@ elements.theme.addEventListener('click', () => {
 elements.toggleSettings.addEventListener('click', () => elements.settingsPanel.classList.add('open'));
 elements.closeSettings.addEventListener('click', () => elements.settingsPanel.classList.remove('open'));
 document.addEventListener('change', (event) => {
-  if (event.target.matches('select, input[type="checkbox"]')) savePreferences();
+  if (event.target.matches('select, input')) savePreferences();
 });
 window.addEventListener('resize', () => fitAddon.fit());
 window.addEventListener('beforeunload', (event) => {
