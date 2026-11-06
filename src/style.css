@@ -100,7 +100,10 @@ button { color: inherit; }
 select,
 input[type='number'] {
   height: 44px; border: 1px solid #31383b; border-radius: 3px; background: #0c0f11; color: #e4e9e6;
+  appearance: textfield;
 }
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button { margin: 0; appearance: none; }
 .field-group select,
 .field-group input[type='number'] { width: 100%; min-width: 0; padding: 0 12px; font: 500 13.5px 'JetBrains Mono', monospace; }
 .baud-control { display: grid; gap: 8px; }
