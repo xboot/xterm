@@ -61,9 +61,8 @@
 
           <div class="divider"></div>
 
-          <div class="option-row"><span><b>本地回显</b><small>显示键盘发送的数据</small></span><label class="switch"><input id="local-echo" type="checkbox" /><span></span></label></div>
           <div class="option-row"><span><b>自动滚动</b><small>始终跟随最新输出</small></span><label class="switch"><input id="auto-scroll" type="checkbox" checked /><span></span></label></div>
-          <div class="option-row"><span><b>时间戳</b><small>在日志中记录接收时间</small></span><label class="switch"><input id="timestamps" type="checkbox" /><span></span></label></div>
+          <div class="option-row"><span><b>时间戳</b><small>在每个接收行的行首显示</small></span><label class="switch"><input id="timestamps" type="checkbox" /><span></span></label></div>
 
           <div class="secure-note">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" /><path d="m9 12 2 2 4-4" /></svg>
@@ -94,15 +93,6 @@
               <button type="button" id="empty-connect">选择串口设备</button>
               <small>需要 Chrome、Edge 或其他支持 Web Serial 的 Chromium 浏览器</small>
             </div>
-          </div>
-
-          <div class="quick-send">
-            <div class="send-input-wrap">
-              <span class="prompt">$</span>
-              <input id="quick-input" type="text" placeholder="输入命令并按 Enter 发送…" autocomplete="off" spellcheck="false" disabled />
-            </div>
-            <select id="line-ending" title="行尾符"><option value="crlf">CRLF</option><option value="lf">LF</option><option value="cr">CR</option><option value="none">NONE</option></select>
-            <button id="send-button" type="button" disabled>发送 <span>↵</span></button>
           </div>
 
           <footer class="statusbar">

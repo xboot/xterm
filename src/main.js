@@ -19,10 +19,6 @@ const elements = {
   statusDetail: $('#status-detail'),
   portLabel: $('#port-label'),
   terminalStage: $('#terminal-stage'),
-  quickInput: $('#quick-input'),
-  sendButton: $('#send-button'),
-  lineEnding: $('#line-ending'),
-  localEcho: $('#local-echo'),
   autoScroll: $('#auto-scroll'),
   timestamps: $('#timestamps'),
   rxCount: $('#rx-count'),
@@ -72,6 +68,7 @@ let startedAt = null;
 let sessionTimer = null;
 let log = [];
 let toastTimer = null;
+let rxAtLineStart = true;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -111,13 +108,11 @@ function setConnected(connected) {
   elements.connect.querySelector('.button-symbol').textContent = connected ? '×' : '↗';
   elements.connect.querySelector('span:last-child').textContent = connected ? '断开连接' : '连接串口';
   elements.emptyState.hidden = connected;
-  elements.quickInput.disabled = !connected;
-  elements.sendButton.disabled = !connected;
   for (const input of [elements.baudRate, elements.dataBits, elements.stopBits, elements.parity, elements.flowControl]) {
     input.disabled = connected;
   }
   if (connected) {
-    elements.quickInput.focus();
+    terminal.focus();
     elements.settingsPanel.classList.remove('open');
   }
 }
@@ -129,10 +124,8 @@ function savePreferences() {
     stopBits: elements.stopBits.value,
     parity: elements.parity.value,
     flowControl: elements.flowControl.value,
-    localEcho: elements.localEcho.checked,
     autoScroll: elements.autoScroll.checked,
     timestamps: elements.timestamps.checked,
-    lineEnding: elements.lineEnding.value,
   };
   localStorage.setItem('xterm-settings', JSON.stringify(settings));
 }
@@ -156,7 +149,7 @@ function timestamp() {
   return new Date().toISOString();
 }
 
-async function writeSerial(data, echo = false) {
+async function writeSerial(data) {
   if (!port?.writable) return;
   const bytes = typeof data === 'string' ? encoder.encode(data) : data;
   const writer = port.writable.getWriter();
@@ -165,11 +158,31 @@ async function writeSerial(data, echo = false) {
     txBytes += bytes.byteLength;
     const text = typeof data === 'string' ? data : decoder.decode(data);
     log.push({ time: timestamp(), direction: 'TX', data: text });
-    if (echo || elements.localEcho.checked) terminal.write(text);
     updateStats();
   } finally {
     writer.releaseLock();
   }
+}
+
+function addLineTimestamps(text) {
+  if (!elements.timestamps.checked) {
+    for (const character of text) {
+      if (character === '\r' || character === '\n') rxAtLineStart = true;
+      else rxAtLineStart = false;
+    }
+    return text;
+  }
+
+  let output = '';
+  for (const character of text) {
+    if (rxAtLineStart && character !== '\r' && character !== '\n') {
+      output += `\x1b[90m[${new Date().toLocaleTimeString()}]\x1b[0m `;
+      rxAtLineStart = false;
+    }
+    output += character;
+    if (character === '\r' || character === '\n') rxAtLineStart = true;
+  }
+  return output;
 }
 
 async function readSerial() {
@@ -183,8 +196,7 @@ async function readSerial() {
         rxBytes += value.byteLength;
         const text = decoder.decode(value, { stream: true });
         log.push({ time: timestamp(), direction: 'RX', data: text });
-        if (elements.timestamps.checked) terminal.write(`\x1b[90m[${new Date().toLocaleTimeString()}]\x1b[0m `);
-        terminal.write(text);
+        terminal.write(addLineTimestamps(text));
         if (elements.autoScroll.checked) terminal.scrollToBottom();
         updateStats();
       }
@@ -223,6 +235,7 @@ async function connect() {
     rxBytes = 0;
     txBytes = 0;
     log = [];
+    rxAtLineStart = true;
     startedAt = Date.now();
     clearInterval(sessionTimer);
     sessionTimer = setInterval(updateStats, 1000);
@@ -264,18 +277,6 @@ async function disconnect() {
   }
 }
 
-async function sendQuickCommand() {
-  if (!port || !elements.quickInput.value) return;
-  const endings = { crlf: '\r\n', lf: '\n', cr: '\r', none: '' };
-  const text = elements.quickInput.value + endings[elements.lineEnding.value];
-  elements.quickInput.value = '';
-  try {
-    await writeSerial(text);
-  } catch (error) {
-    showToast(`发送失败：${error.message}`, 'error');
-  }
-}
-
 function downloadLog() {
   if (!log.length) {
     showToast('当前还没有可下载的串口数据');
@@ -296,10 +297,6 @@ terminal.onData((data) => {
 
 elements.connect.addEventListener('click', connect);
 elements.emptyConnect.addEventListener('click', connect);
-elements.sendButton.addEventListener('click', sendQuickCommand);
-elements.quickInput.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') sendQuickCommand();
-});
 elements.clearTerminal.addEventListener('click', () => {
   terminal.clear();
   terminal.focus();

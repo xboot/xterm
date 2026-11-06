@@ -78,7 +78,7 @@ button { color: inherit; }
 .field-group { display: grid; gap: 8px; margin-bottom: 15px; min-width: 0; }
 .field-group label { color: #9ba4a7; font-size: 11px; font-weight: 600; }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-select, .send-input-wrap {
+select {
   height: 40px; border: 1px solid var(--line); border-radius: 2px; background: #0c0f11; color: #dbe1de;
 }
 .field-group select { width: 100%; padding: 0 11px; font: 500 12px 'JetBrains Mono', monospace; }
@@ -110,7 +110,7 @@ select:disabled { opacity: .45; }
 .secure-note p { margin: 0; color: #687167; font-size: 9px; line-height: 1.6; }
 .secure-note b { color: #aeb9a6; font-weight: 600; }
 
-.terminal-shell { min-width: 0; display: grid; grid-template-rows: 52px minmax(0, 1fr) 62px 32px; background: var(--bg); }
+.terminal-shell { min-width: 0; display: grid; grid-template-rows: 52px minmax(0, 1fr) 32px; background: var(--bg); }
 .terminal-toolbar, .statusbar { display: flex; align-items: center; border-bottom: 1px solid var(--line); }
 .terminal-toolbar { justify-content: space-between; padding: 0 18px 0 21px; background: #101315; }
 .terminal-title { display: flex; align-items: center; gap: 10px; font: 600 11px 'JetBrains Mono', monospace; }
@@ -146,15 +146,6 @@ select:disabled { opacity: .45; }
 .empty-state button:hover { border-color: var(--accent); }
 .empty-state small { margin-top: 17px; color: #4f585b; font-size: 8px; }
 
-.quick-send { display: flex; align-items: center; gap: 8px; padding: 10px 17px; border-top: 1px solid var(--line); background: #101315; }
-.send-input-wrap { min-width: 0; flex: 1; display: flex; align-items: center; }
-.prompt { padding-left: 13px; color: var(--accent); font: 600 13px 'JetBrains Mono', monospace; }
-.send-input-wrap input { min-width: 0; flex: 1; height: 100%; border: 0; padding: 0 12px; background: transparent; color: #dce2df; font: 12px 'JetBrains Mono', monospace; outline: 0; }
-.send-input-wrap input::placeholder { color: #4c5659; }
-.quick-send > select { width: 76px; padding: 0 8px; color: #98a1a4; font: 500 9px 'JetBrains Mono', monospace; }
-.quick-send > button { height: 40px; padding: 0 17px; border: 1px solid #3e4828; background: #171d11; color: var(--accent); font-size: 10px; font-weight: 700; cursor: pointer; }
-.quick-send > button:disabled { border-color: var(--line); background: #141719; color: #4b5255; cursor: not-allowed; }
-
 .statusbar { gap: 22px; padding: 0 19px; border-top: 1px solid #1b2022; border-bottom: 0; background: #0c0f11; color: #515b5e; font: 500 8px 'JetBrains Mono', monospace; letter-spacing: .07em; }
 .statusbar > span { display: flex; align-items: center; gap: 7px; }
 .statusbar b { color: #7c878a; font-weight: 500; }
@@ -175,12 +166,9 @@ select:disabled { opacity: .45; }
   .settings-panel { position: fixed; top: 58px; bottom: 0; left: 0; width: min(326px, 88vw); transform: translateX(-105%); box-shadow: 20px 0 50px #0009; transition: transform .22s ease; }
   .settings-panel.open { transform: translateX(0); }
   .panel-close { border: 0; background: transparent; font-size: 22px; }
-  .terminal-shell { height: 100%; grid-template-rows: 46px minmax(0, 1fr) 57px 29px; }
+  .terminal-shell { height: 100%; grid-template-rows: 46px minmax(0, 1fr) 29px; }
   .terminal-stage { padding: 12px 8px; }
   .terminal-actions button span { display: none; }
-  .quick-send { padding: 8px; gap: 5px; }
-  .quick-send > select { width: 65px; }
-  .quick-send > button { padding: 0 11px; }
   .statusbar { padding: 0 10px; gap: 9px; }
   .statusbar > span:first-child, .statusbar #session-time { display: none; }
   .empty-state { padding: 20px; }
