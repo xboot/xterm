@@ -120,6 +120,7 @@ select:disabled { opacity: .45; }
 .option-row > span { display: grid; gap: 4px; }
 .option-row b { font-size: 13px; font-weight: 650; }
 .option-row small { color: #909a9d; font-size: 11px; line-height: 1.35; }
+.option-select { width: 88px; height: 34px; flex: 0 0 auto; padding: 0 9px; font: 650 12px 'JetBrains Mono', monospace; }
 .switch input { position: absolute; opacity: 0; pointer-events: none; }
 .switch span { width: 36px; height: 21px; display: block; position: relative; border-radius: 20px; background: #3b4346; cursor: pointer; transition: .2s; }
 .switch span::after { content: ''; position: absolute; top: 3px; left: 3px; width: 15px; height: 15px; border-radius: 50%; background: #b8c0c2; transition: .2s; }
@@ -134,10 +135,10 @@ select:disabled { opacity: .45; }
 .terminal-shell { min-width: 0; display: grid; grid-template-rows: 58px minmax(0, 1fr) 38px; background: var(--bg); }
 .terminal-toolbar, .statusbar { display: flex; align-items: center; border-bottom: 1px solid var(--line); }
 .terminal-toolbar { justify-content: space-between; padding: 0 21px 0 24px; background: #101315; }
-.terminal-title { display: flex; align-items: center; gap: 11px; font: 650 13px 'JetBrains Mono', monospace; }
+.terminal-title { min-width: 0; flex: 1; display: flex; align-items: center; gap: 11px; font: 650 13px 'JetBrains Mono', monospace; }
 .terminal-icon { color: var(--accent); font-size: 18px; }
-.port-label { padding-left: 11px; border-left: 1px solid #303639; color: #929c9f; font-size: 11px; font-weight: 500; }
-.terminal-actions { display: flex; gap: 5px; }
+.port-label { min-width: 0; overflow: hidden; padding-left: 11px; border-left: 1px solid #303639; color: #929c9f; font-size: 11px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.terminal-actions { flex: 0 0 auto; display: flex; gap: 5px; }
 .terminal-actions button {
   min-width: 62px; height: 34px; display: flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid transparent; border-radius: 3px; background: transparent;
   color: #a1abad; font: 550 11px 'JetBrains Mono', monospace; cursor: pointer;

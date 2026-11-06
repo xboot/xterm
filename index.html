@@ -64,15 +64,13 @@
           </div>
 
           <div class="field-group"><label for="parity" data-i18n="parity">校验位</label><select id="parity"><option value="none" data-i18n="none">无</option><option value="even" data-i18n="evenParity">偶校验</option><option value="odd" data-i18n="oddParity">奇校验</option></select></div>
-          <div class="field-row">
-            <div class="field-group"><label for="flow-control" data-i18n="flowControl">流控制</label><select id="flow-control"><option value="none" data-i18n="none">无</option><option value="hardware" data-i18n="hardwareFlow">硬件流控</option></select></div>
-            <div class="field-group"><label for="line-ending" data-i18n="lineEnding">回车发送</label><select id="line-ending"><option value="cr">CR</option><option value="lf">LF</option><option value="crlf">CRLF</option></select></div>
-          </div>
+          <div class="field-group"><label for="flow-control" data-i18n="flowControl">流控制</label><select id="flow-control"><option value="none" data-i18n="none">无</option><option value="hardware" data-i18n="hardwareFlow">硬件流控</option></select></div>
 
           <button class="connect-button" id="connect-button" type="button"><span class="button-symbol">↗</span><span data-i18n="connect">连接串口</span></button>
 
           <div class="divider"></div>
 
+          <div class="option-row"><span><b data-i18n="lineEnding">回车发送</b><small data-i18n="lineEndingHint">设置 Enter 键发送的行尾符</small></span><select class="option-select" id="line-ending" aria-label="回车发送"><option value="cr">CR</option><option value="lf">LF</option><option value="crlf">CRLF</option></select></div>
           <div class="option-row"><span><b data-i18n="autoScroll">自动滚动</b><small data-i18n="autoScrollHint">始终跟随最新输出</small></span><label class="switch"><input id="auto-scroll" type="checkbox" checked /><span></span></label></div>
           <div class="option-row"><span><b data-i18n="timestamps">时间戳</b><small data-i18n="timestampsHint">在每个接收行的行首显示</small></span><label class="switch"><input id="timestamps" type="checkbox" /><span></span></label></div>
 

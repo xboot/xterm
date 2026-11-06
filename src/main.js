@@ -38,7 +38,7 @@ const elements = {
 const translations = {
   zh: {
     settingsTitle: '连接配置', baudRate: '波特率', dataBits: '数据位', stopBits: '停止位',
-    parity: '校验位', flowControl: '流控制', lineEnding: '回车发送', none: '无', evenParity: '偶校验', oddParity: '奇校验',
+    parity: '校验位', flowControl: '流控制', lineEnding: '回车发送', lineEndingHint: '设置 Enter 键发送的行尾符', none: '无', evenParity: '偶校验', oddParity: '奇校验',
     hardwareFlow: '硬件流控', connect: '连接串口', disconnect: '断开连接', connected: '已连接', disconnected: '未连接',
     autoScroll: '自动滚动', autoScrollHint: '始终跟随最新输出', timestamps: '时间戳',
     timestampsHint: '在每个接收行的行首显示', privacyTitle: '数据仅在本机流转',
@@ -50,10 +50,11 @@ const translations = {
     unsupported: '当前浏览器不支持 Web Serial，请使用桌面版 Chrome 或 Edge。', connectedToast: '串口连接成功',
     disconnectedToast: '串口已断开', noLog: '当前还没有可下载的串口数据', readFailed: '读取串口失败',
     connectFailed: '连接失败', sendFailed: '发送失败', invalidBaudRate: '请输入有效的波特率',
+    serialDevice: '串口设备', hardwareShort: '硬件流控',
   },
   en: {
     settingsTitle: 'Connection', baudRate: 'Baud rate', dataBits: 'Data bits', stopBits: 'Stop bits',
-    parity: 'Parity', flowControl: 'Flow control', lineEnding: 'Enter sends', none: 'None', evenParity: 'Even', oddParity: 'Odd',
+    parity: 'Parity', flowControl: 'Flow control', lineEnding: 'Enter sends', lineEndingHint: 'Line ending sent by the Enter key', none: 'None', evenParity: 'Even', oddParity: 'Odd',
     hardwareFlow: 'Hardware', connect: 'Connect serial', disconnect: 'Disconnect', connected: 'Connected', disconnected: 'Disconnected',
     autoScroll: 'Auto scroll', autoScrollHint: 'Follow the latest output', timestamps: 'Timestamps',
     timestampsHint: 'Show once at the start of each line', privacyTitle: 'Data stays on this device',
@@ -65,6 +66,7 @@ const translations = {
     unsupported: 'Web Serial is not supported. Please use desktop Chrome or Edge.', connectedToast: 'Serial port connected',
     disconnectedToast: 'Serial port disconnected', noLog: 'There is no serial data to download yet', readFailed: 'Serial read failed',
     connectFailed: 'Connection failed', sendFailed: 'Send failed', invalidBaudRate: 'Enter a valid baud rate',
+    serialDevice: 'Serial device', hardwareShort: 'HW flow',
   },
 };
 
@@ -165,11 +167,12 @@ function applyLanguage() {
   document.querySelector('.top-actions a').setAttribute('aria-label', t('github'));
   elements.clearTerminal.title = t('clearTitle');
   elements.downloadLog.title = t('logTitle');
+  elements.lineEnding.setAttribute('aria-label', t('lineEnding'));
   document.querySelector('meta[name="description"]').content = currentLanguage === 'zh'
     ? 'XBOOT Web Serial Terminal — 在浏览器中安全连接、调试和记录串口设备。'
     : 'XBOOT Web Serial Terminal — connect, debug, and log serial devices securely in your browser.';
   setConnected(Boolean(port));
-  if (!port) elements.portLabel.textContent = t('waitingDevice');
+  updatePortLabel();
   if (!('serial' in navigator)) {
     elements.statusDetail.textContent = 'UNSUPPORTED BROWSER';
     elements.emptyState.querySelector('p').textContent = t('unsupported');
@@ -203,6 +206,26 @@ function setConnected(connected) {
     terminal.focus();
     elements.settingsPanel.classList.remove('open');
   }
+}
+
+function updatePortLabel() {
+  if (!port) {
+    elements.portLabel.textContent = t('waitingDevice');
+    elements.portLabel.removeAttribute('title');
+    return;
+  }
+
+  const info = port.getInfo();
+  const ids = [info.usbVendorId, info.usbProductId]
+    .filter((value) => value !== undefined)
+    .map((value) => value.toString(16).toUpperCase().padStart(4, '0'));
+  const parity = { none: 'N', even: 'E', odd: 'O' }[elements.parity.value] ?? 'N';
+  const framing = `${elements.dataBits.value}${parity}${elements.stopBits.value}`;
+  const device = ids.length ? `USB ${ids.join(':')}` : t('serialDevice');
+  const flow = elements.flowControl.value === 'hardware' ? ` · ${t('hardwareShort')}` : '';
+  const label = `${device} · ${elements.baudRate.value} · ${framing}${flow}`;
+  elements.portLabel.textContent = label;
+  elements.portLabel.title = label;
 }
 
 function savePreferences() {
@@ -336,13 +359,9 @@ async function connect() {
     startedAt = Date.now();
     clearInterval(sessionTimer);
     sessionTimer = setInterval(updateStats, 1000);
-    const info = port.getInfo();
-    const ids = [info.usbVendorId, info.usbProductId]
-      .filter((value) => value !== undefined)
-      .map((value) => value.toString(16).toUpperCase().padStart(4, '0'));
-    elements.portLabel.textContent = ids.length ? `USB ${ids.join(':')}` : `${elements.baudRate.value} baud`;
     terminal.clear();
     setConnected(true);
+    updatePortLabel();
     updateStats();
     savePreferences();
     showToast(t('connectedToast'), 'success');
@@ -387,7 +406,7 @@ async function disconnect() {
     writeQueue = Promise.resolve();
     clearInterval(sessionTimer);
     setConnected(false);
-    elements.portLabel.textContent = t('waitingDevice');
+    updatePortLabel();
     updateStats();
     showToast(t('disconnectedToast'));
   }
