@@ -117,7 +117,6 @@ let rxBytes = 0;
 let txBytes = 0;
 let startedAt = null;
 let sessionTimer = null;
-let log = [];
 let toastTimer = null;
 let rxAtLineStart = true;
 const encoder = new TextEncoder();
@@ -231,10 +230,6 @@ function restorePreferences() {
   }
 }
 
-function timestamp() {
-  return new Date().toISOString();
-}
-
 async function writeSerial(data) {
   if (!port?.writable) return;
   const bytes = typeof data === 'string' ? encoder.encode(data) : data;
@@ -242,8 +237,6 @@ async function writeSerial(data) {
   try {
     await writer.write(bytes);
     txBytes += bytes.byteLength;
-    const text = typeof data === 'string' ? data : decoder.decode(data);
-    log.push({ time: timestamp(), direction: 'TX', data: text });
     updateStats();
   } finally {
     writer.releaseLock();
@@ -282,7 +275,6 @@ async function readSerial() {
         if (!value) continue;
         rxBytes += value.byteLength;
         const text = decoder.decode(value, { stream: true });
-        log.push({ time: timestamp(), direction: 'RX', data: text });
         terminal.write(addLineTimestamps(text));
         if (elements.autoScroll.checked) terminal.scrollToBottom();
         updateStats();
@@ -321,7 +313,6 @@ async function connect() {
     closing = false;
     rxBytes = 0;
     txBytes = 0;
-    log = [];
     rxAtLineStart = true;
     startedAt = Date.now();
     clearInterval(sessionTimer);
@@ -365,11 +356,21 @@ async function disconnect() {
 }
 
 function downloadLog() {
-  if (!log.length) {
+  const buffer = terminal.buffer.active;
+  let content = '';
+
+  for (let index = 0; index < buffer.length; index++) {
+    const line = buffer.getLine(index);
+    if (!line) continue;
+    if (index > 0 && !line.isWrapped) content += '\n';
+    content += line.translateToString(true);
+  }
+
+  content = content.trimEnd();
+  if (!content) {
     showToast(t('noLog'));
     return;
   }
-  const content = log.map((entry) => `[${entry.time}] ${entry.direction}  ${entry.data}`).join('');
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
