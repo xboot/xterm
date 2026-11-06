@@ -6,6 +6,7 @@ import './style.css';
 const $ = (selector) => document.querySelector(selector);
 const elements = {
   baudRate: $('#baud-rate'),
+  customBaudRate: $('#custom-baud-rate'),
   dataBits: $('#data-bits'),
   stopBits: $('#stop-bits'),
   parity: $('#parity'),
@@ -37,7 +38,7 @@ const elements = {
 
 const translations = {
   zh: {
-    settingsTitle: '连接配置', baudRate: '波特率', dataBits: '数据位', stopBits: '停止位',
+    settingsTitle: '连接配置', baudRate: '波特率', customBaudRate: '自定义…', customBaudRateHint: '输入自定义波特率', dataBits: '数据位', stopBits: '停止位',
     parity: '校验位', flowControl: '流控制', lineEnding: '回车发送', lineEndingHint: '设置 Enter 键发送的行尾符', none: '无', evenParity: '偶校验', oddParity: '奇校验',
     hardwareFlow: '硬件流控', connect: '连接串口', disconnect: '断开连接', connected: '已连接', disconnected: '未连接',
     autoScroll: '自动滚动', autoScrollHint: '始终跟随最新输出', timestamps: '时间戳',
@@ -53,7 +54,7 @@ const translations = {
     serialDevice: '串口设备', hardwareShort: '硬件流控',
   },
   en: {
-    settingsTitle: 'Connection', baudRate: 'Baud rate', dataBits: 'Data bits', stopBits: 'Stop bits',
+    settingsTitle: 'Connection', baudRate: 'Baud rate', customBaudRate: 'Custom…', customBaudRateHint: 'Enter a custom baud rate', dataBits: 'Data bits', stopBits: 'Stop bits',
     parity: 'Parity', flowControl: 'Flow control', lineEnding: 'Enter sends', lineEndingHint: 'Line ending sent by the Enter key', none: 'None', evenParity: 'Even', oddParity: 'Odd',
     hardwareFlow: 'Hardware', connect: 'Connect serial', disconnect: 'Disconnect', connected: 'Connected', disconnected: 'Disconnected',
     autoScroll: 'Auto scroll', autoScrollHint: 'Follow the latest output', timestamps: 'Timestamps',
@@ -168,6 +169,8 @@ function applyLanguage() {
   elements.clearTerminal.title = t('clearTitle');
   elements.downloadLog.title = t('logTitle');
   elements.lineEnding.setAttribute('aria-label', t('lineEnding'));
+  elements.customBaudRate.setAttribute('aria-label', t('customBaudRateHint'));
+  elements.customBaudRate.placeholder = t('customBaudRateHint');
   document.querySelector('meta[name="description"]').content = currentLanguage === 'zh'
     ? 'XBOOT Web Serial Terminal — 在浏览器中安全连接、调试和记录串口设备。'
     : 'XBOOT Web Serial Terminal — connect, debug, and log serial devices securely in your browser.';
@@ -199,13 +202,23 @@ function setConnected(connected) {
   elements.connect.querySelector('.button-symbol').textContent = connected ? '×' : '↗';
   elements.connect.querySelector('span:last-child').textContent = connected ? t('disconnect') : t('connect');
   elements.emptyState.hidden = connected;
-  for (const input of [elements.baudRate, elements.dataBits, elements.stopBits, elements.parity, elements.flowControl]) {
+  for (const input of [elements.baudRate, elements.customBaudRate, elements.dataBits, elements.stopBits, elements.parity, elements.flowControl]) {
     input.disabled = connected;
   }
   if (connected) {
     terminal.focus();
     elements.settingsPanel.classList.remove('open');
   }
+}
+
+function selectedBaudRate() {
+  return elements.baudRate.value === 'custom' ? elements.customBaudRate.value : elements.baudRate.value;
+}
+
+function updateBaudRateControl(focusCustom = false) {
+  const custom = elements.baudRate.value === 'custom';
+  elements.customBaudRate.hidden = !custom;
+  if (custom && focusCustom) elements.customBaudRate.focus();
 }
 
 function updatePortLabel() {
@@ -223,14 +236,14 @@ function updatePortLabel() {
   const framing = `${elements.dataBits.value}${parity}${elements.stopBits.value}`;
   const device = ids.length ? `USB ${ids.join(':')}` : t('serialDevice');
   const flow = elements.flowControl.value === 'hardware' ? ` · ${t('hardwareShort')}` : '';
-  const label = `${device} · ${elements.baudRate.value} · ${framing}${flow}`;
+  const label = `${device} · ${selectedBaudRate()} · ${framing}${flow}`;
   elements.portLabel.textContent = label;
   elements.portLabel.title = label;
 }
 
 function savePreferences() {
   const settings = {
-    baudRate: elements.baudRate.value,
+    baudRate: selectedBaudRate(),
     dataBits: elements.dataBits.value,
     stopBits: elements.stopBits.value,
     parity: elements.parity.value,
@@ -246,7 +259,15 @@ function restorePreferences() {
   try {
     const settings = JSON.parse(localStorage.getItem('xterm-settings'));
     if (!settings) return;
+    if (settings.baudRate !== undefined) {
+      const baudRate = String(settings.baudRate);
+      const commonOption = [...elements.baudRate.options].some((option) => option.value === baudRate);
+      elements.baudRate.value = commonOption ? baudRate : 'custom';
+      if (!commonOption) elements.customBaudRate.value = baudRate;
+      updateBaudRateControl();
+    }
     for (const [key, value] of Object.entries(settings)) {
+      if (key === 'baudRate') continue;
       const input = elements[key];
       if (!input || value === undefined) continue;
       if (input.type === 'checkbox') input.checked = value;
@@ -335,10 +356,11 @@ async function connect() {
     return;
   }
   try {
-    const baudRate = Number(elements.baudRate.value);
-    if (!Number.isInteger(baudRate) || !elements.baudRate.checkValidity()) {
+    const baudRate = Number(selectedBaudRate());
+    const baudRateInput = elements.baudRate.value === 'custom' ? elements.customBaudRate : elements.baudRate;
+    if (!Number.isInteger(baudRate) || baudRate < 1 || baudRate > 20000000 || !baudRateInput.checkValidity()) {
       showToast(t('invalidBaudRate'), 'error');
-      elements.baudRate.focus();
+      baudRateInput.focus();
       return;
     }
     port = await navigator.serial.requestPort();
@@ -458,6 +480,7 @@ elements.theme.addEventListener('click', () => {
 });
 elements.toggleSettings.addEventListener('click', () => elements.settingsPanel.classList.add('open'));
 elements.closeSettings.addEventListener('click', () => elements.settingsPanel.classList.remove('open'));
+elements.baudRate.addEventListener('change', () => updateBaudRateControl(true));
 document.addEventListener('change', (event) => {
   if (event.target.matches('select, input')) savePreferences();
 });
@@ -471,6 +494,7 @@ navigator.serial?.addEventListener('disconnect', (event) => {
 });
 
 restorePreferences();
+updateBaudRateControl();
 applyLanguage();
 applyTheme();
 fitAddon.fit();
