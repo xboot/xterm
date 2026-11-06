@@ -70,7 +70,7 @@ const translations = {
 let currentLanguage = localStorage.getItem('xterm-language') === 'en' ? 'en' : 'zh';
 let currentTheme = localStorage.getItem('xterm-theme');
 if (!['light', 'dark'].includes(currentTheme)) {
-  currentTheme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  currentTheme = 'dark';
 }
 
 const terminalThemes = {
