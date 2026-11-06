@@ -14,6 +14,19 @@
   --danger: #fb7777;
 }
 
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f3f5f1;
+  --panel: #ffffff;
+  --panel-raised: #f7f8f4;
+  --line: #d9ded7;
+  --muted: #687174;
+  --text: #202627;
+  --accent: #668716;
+  --accent-dark: #edf4dc;
+  --danger: #b94444;
+}
+
 * { box-sizing: border-box; }
 
 html, body, #app { height: 100%; margin: 0; }
@@ -64,6 +77,10 @@ button { color: inherit; }
 }
 .icon-button:hover { border-color: #4a5357; color: var(--text); }
 .icon-button svg { width: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.language-button { font: 700 10px 'JetBrains Mono', monospace; }
+.theme-button .moon-icon { display: none; }
+:root[data-theme='light'] .theme-button .sun-icon { display: none; }
+:root[data-theme='light'] .theme-button .moon-icon { display: block; }
 .mobile-only, .panel-close { display: none; }
 
 .workspace { height: calc(100% - 70px); display: grid; grid-template-columns: 292px minmax(0, 1fr); }
@@ -156,11 +173,47 @@ select:disabled { opacity: .45; }
 .toast[data-type='success'] { border-color: #526b2b; color: var(--accent); }
 .toast[data-type='error'] { border-color: #713d3d; color: #ff9999; }
 
+:root[data-theme='light'] .topbar { background: rgba(255, 255, 255, .94); }
+:root[data-theme='light'] .brand-mark { border-color: #91a75e; background: #f1f6e6; }
+:root[data-theme='light'] .icon-button { background: #ffffff; color: #626c6e; }
+:root[data-theme='light'] .field-group label { color: #5f696b; }
+:root[data-theme='light'] select { background: #f8f9f6; color: #293031; }
+:root[data-theme='light'] .connect-button { color: #ffffff; }
+:root[data-theme='light'] .connect-button:hover { background: #769620; }
+:root[data-theme='light'] .connect-button.connected { border-color: #d7a8a8; background: #fff0f0; color: #aa3737; }
+:root[data-theme='light'] .option-row small { color: #788183; }
+:root[data-theme='light'] .switch span { background: #c7ceca; }
+:root[data-theme='light'] .switch span::after { background: #ffffff; box-shadow: 0 1px 3px #0003; }
+:root[data-theme='light'] .switch input:checked + span { background: #819e3d; }
+:root[data-theme='light'] .switch input:checked + span::after { background: #ffffff; }
+:root[data-theme='light'] .secure-note { border-color: #dce7c8; background: #f4f8ec; }
+:root[data-theme='light'] .secure-note p { color: #65705e; }
+:root[data-theme='light'] .secure-note b { color: #46513e; }
+:root[data-theme='light'] .terminal-toolbar { background: #ffffff; }
+:root[data-theme='light'] .port-label { border-color: #d8ddd7; color: #737c7d; }
+:root[data-theme='light'] .terminal-actions button { color: #647073; }
+:root[data-theme='light'] .terminal-actions button:hover { background: #f2f4f0; color: #252b2c; }
+:root[data-theme='light'] .terminal-stage {
+  background-color: #f7f8f4;
+  background-image: linear-gradient(#dfe4dc88 1px, transparent 1px), linear-gradient(90deg, #dfe4dc77 1px, transparent 1px);
+}
+:root[data-theme='light'] .empty-state { background: radial-gradient(circle at 50% 45%, #e9f1d9aa, transparent 34%); }
+:root[data-theme='light'] .plug-orbit { border-color: #a6b68a; box-shadow: 0 0 0 10px #dfe9ce44, 0 0 0 20px #dfe9ce22; }
+:root[data-theme='light'] .empty-state p { color: #687275; }
+:root[data-theme='light'] .empty-state button { border-color: #91a961; background: #f1f6e7; }
+:root[data-theme='light'] .empty-state small { color: #818a8c; }
+:root[data-theme='light'] .statusbar { border-color: #dfe3de; background: #eef1ed; color: #70797b; }
+:root[data-theme='light'] .statusbar b { color: #4e585a; }
+:root[data-theme='light'] .toast { border-color: #cbd1cb; background: #ffffff; color: #303738; box-shadow: 0 12px 35px #27312724; }
+:root[data-theme='light'] .toast[data-type='success'] { border-color: #9bb56d; }
+:root[data-theme='light'] .toast[data-type='error'] { border-color: #d4a0a0; color: #a73737; }
+
 @media (max-width: 760px) {
-  .topbar { height: 58px; padding: 0 14px; }
+  .topbar { height: 58px; padding: 0 14px; gap: 8px; }
   .brand-mark { width: 32px; height: 32px; }
   .brand-copy small { display: none; }
   .connection-state { font-size: 10px; }
+  #state-text { display: none; }
   .mobile-only, .panel-close { display: grid; }
   .workspace { height: calc(100% - 58px); display: block; }
   .settings-panel { position: fixed; top: 58px; bottom: 0; left: 0; width: min(326px, 88vw); transform: translateX(-105%); box-shadow: 20px 0 50px #0009; transition: transform .22s ease; }
