@@ -1,7 +1,7 @@
 .PHONY: deps start check build serve deploy clean distclean help
 
 help:
-	@echo "XBOOT Web Serial Terminal"
+	@echo "Xterm Web Serial Terminal"
 	@echo "=========================="
 	@echo "  make deps      - Install dependencies"
 	@echo "  make start     - Start the development server"

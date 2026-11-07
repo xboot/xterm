@@ -172,8 +172,8 @@ function applyLanguage() {
   elements.customBaudRate.setAttribute('aria-label', t('customBaudRateHint'));
   elements.customBaudRate.placeholder = t('customBaudRateHint');
   document.querySelector('meta[name="description"]').content = currentLanguage === 'zh'
-    ? 'XBOOT Web Serial Terminal — 在浏览器中安全连接、调试和记录串口设备。'
-    : 'XBOOT Web Serial Terminal — connect, debug, and log serial devices securely in your browser.';
+    ? 'Xterm Web Serial Terminal — 在浏览器中安全连接、调试和记录串口设备。'
+    : 'Xterm Web Serial Terminal — connect, debug, and log serial devices securely in your browser.';
   setConnected(Boolean(port));
   updatePortLabel();
   if (!('serial' in navigator)) {
