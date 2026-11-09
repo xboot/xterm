@@ -484,7 +484,15 @@ elements.baudRate.addEventListener('change', () => updateBaudRateControl(true));
 document.addEventListener('change', (event) => {
   if (event.target.matches('select, input')) savePreferences();
 });
-window.addEventListener('resize', () => fitAddon.fit());
+let fitFrame = null;
+const resizeObserver = new ResizeObserver(() => {
+  if (fitFrame !== null) cancelAnimationFrame(fitFrame);
+  fitFrame = requestAnimationFrame(() => {
+    fitFrame = null;
+    fitAddon.fit();
+  });
+});
+resizeObserver.observe(elements.terminalStage);
 window.addEventListener('beforeunload', (event) => {
   if (!port) return;
   event.preventDefault();
