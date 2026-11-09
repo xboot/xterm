@@ -159,7 +159,7 @@ select:disabled, input:disabled { opacity: .45; }
 }
 #terminal { width: 100%; height: 100%; }
 #terminal .xterm { height: 100%; }
-#terminal .xterm-viewport { scrollbar-color: #3d4649 transparent; scrollbar-width: thin; }
+#terminal .xterm-viewport { background-color: #090c0e; scrollbar-color: #3d4649 transparent; scrollbar-width: thin; }
 .empty-state {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: 30px; text-align: center; background: radial-gradient(circle at 50% 45%, #131b124f, transparent 34%);
@@ -208,6 +208,7 @@ select:disabled, input:disabled { opacity: .45; }
   background-color: #f7f8f4;
   background-image: linear-gradient(#dfe4dc88 1px, transparent 1px), linear-gradient(90deg, #dfe4dc77 1px, transparent 1px);
 }
+:root[data-theme='light'] #terminal .xterm-viewport { background-color: #f7f8f4; }
 :root[data-theme='light'] .empty-state { background: radial-gradient(circle at 50% 45%, #e9f1d9aa, transparent 34%); }
 :root[data-theme='light'] .plug-orbit { border-color: #a6b68a; box-shadow: 0 0 0 10px #dfe9ce44, 0 0 0 20px #dfe9ce22; }
 :root[data-theme='light'] .empty-state p { color: #687275; }
